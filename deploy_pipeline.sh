@@ -42,18 +42,18 @@ mkdir -p "${BUILD_DIR}/test"
     done
 )
 
-lambda_artifacts_stack_name="${PREFIX}-device-farm-demo-lambda-artifacts-bucket"
-echo "Deploying lambda artifacts bucket to ${lambda_artifacts_stack_name}"
+infrastructure_stack_name="${PREFIX}-device-farm-demo-infrastructure"
+echo "Deploying infrastructure to ${infrastructure_stack_name}"
 
 aws cloudformation deploy \
-    --template-file pipeline/lambda-artifacts-bucket.yaml \
-    --stack-name ${lambda_artifacts_stack_name} \
+    --template-file pipeline/infrastructure.yaml \
+    --stack-name ${infrastructure_stack_name} \
     --no-fail-on-empty-changeset \
     --parameter-overrides "Prefix=${PREFIX}"
 
 lambda_artifacts_bucket=$(aws cloudformation describe-stacks \
     --output text \
-    --stack-name ${lambda_artifacts_stack_name} \
+    --stack-name ${infrastructure_stack_name} \
     --query 'Stacks[0].Outputs[?OutputKey==`LambdaArtifactsBucket`].OutputValue')
 
 echo "Packaging device-farm custom resource lambdas"

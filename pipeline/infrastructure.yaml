@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Device Farm demo - infrastructure
+Parameters:
+  Prefix:
+    AllowedPattern: '[A-Za-z0-9]+'
+    Type: String
+Resources:
+  LambdaArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Prefix}-device-farm-demo-lambda-artifacts-${AWS::AccountId}'
+  PipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
+  PipelineArtifactsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetBucketVersioning
+              - s3:ListBucketVersions
+            Resource: !GetAtt PipelineArtifactsBucket.Arn
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:GetObjectVersion
+              - s3:PutObject
+            Resource: !Sub arn:aws:s3:::${PipelineArtifactsBucket}/*
+Outputs:
+  LambdaArtifactsBucket:
+    Value: !Ref LambdaArtifactsBucket
+  PipelineArtifactsBucket:
+    Value: !Ref PipelineArtifactsBucket
+    Export:
+      Name: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-bucket'
+  PipelineArtifactsRPolicyArn:
+    Value: !Ref PipelineArtifactsPolicy
+    Export:
+      Name: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-role-arn'
