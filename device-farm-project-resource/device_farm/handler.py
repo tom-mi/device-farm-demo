@@ -1,5 +1,10 @@
+from typing import Optional
+
 import boto3
 import traceback
+
+from botocore.client import BaseClient
+
 from . import cloudformation
 
 
@@ -38,10 +43,12 @@ def lambda_handler(event: dict, context):
                 else:
                     raise ValueError('Unknown RequestType ' + event['RequestType'])
 
+                top_devices_device_pool_arn = get_top_device_pool_arn(client, physical_resource_id)
                 cloudformation.send_response(
                     event=event, context=context,
                     status=cloudformation.Status.SUCCESS,
-                    physical_resource_id=physical_resource_id
+                    physical_resource_id=physical_resource_id,
+                    data={'Arn': physical_resource_id, 'TopDevicesDevicePoolArn': top_devices_device_pool_arn},
                 )
     except Exception as e:
         print(e)
@@ -59,5 +66,15 @@ def lambda_handler(event: dict, context):
     return 'ok'
 
 
-def _get_device_farm_client():
+def get_top_device_pool_arn(client: BaseClient, project_arn: str) -> Optional[str]:
+    paginator = client.get_paginator('list_device_pools')
+    for page in paginator.paginate(arn=project_arn, type='CURATED'):
+        for device_pool in page['devicePools']:
+            if device_pool['name'] == 'Top Devices':
+                return device_pool['arn']
+    print('Top Devices device pool not found')
+    return None
+
+
+def _get_device_farm_client() -> BaseClient:
     return boto3.client('devicefarm', region_name='us-west-2')

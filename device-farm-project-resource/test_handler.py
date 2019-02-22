@@ -9,6 +9,7 @@ from device_farm import handler
 TEST_PROJECT_NAME = 'project-name'
 TEST_RESPONSE_URL = 'http://example.com/response'
 TEST_PHYSICAL_RESOURCE_ID = '1235'
+TEST_TOP_DEVICES_ARN = 'arn:top-devices'
 
 
 @pytest.fixture
@@ -36,6 +37,24 @@ def device_farm_endpoint(monkeypatch):
             'created': datetime.now(),
         },
     })
+    device_pools_iterator = [{
+        'devicePools': [
+            {
+                'arn': 'arn:other',
+                'name': 'Flop Devices',
+                'type': 'CURATED',
+            }, ],
+    }, {
+        'devicePools': [
+            {
+                'arn': TEST_TOP_DEVICES_ARN,
+                'name': 'Top Devices',
+                'type': 'CURATED',
+            }, ],
+    }]
+    paginator_mock = MagicMock()
+    paginator_mock.paginate = MagicMock(return_value=device_pools_iterator)
+    mock.get_paginator = MagicMock(return_value=paginator_mock)
     return mock
 
 
@@ -59,6 +78,7 @@ def test_handler_create_missing_parameter(context, cf_endpoint, device_farm_endp
     device_farm_endpoint.create_project.assert_not_called()
     device_farm_endpoint.update_project.assert_not_called()
 
+
 def test_handler_create(context, cf_endpoint, device_farm_endpoint):
     event = {
         'RequestType': 'Create',
@@ -77,8 +97,12 @@ def test_handler_create(context, cf_endpoint, device_farm_endpoint):
     assert len(cf_endpoint.request_history) == 1
     assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
     assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
+    assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Data']['TopDevicesDevicePoolArn'] == TEST_TOP_DEVICES_ARN
     device_farm_endpoint.create_project.assert_called_with(name=TEST_PROJECT_NAME)
     device_farm_endpoint.update_project.assert_not_called()
+    device_farm_endpoint.get_paginator.assert_called_with('list_device_pools')
+    device_farm_endpoint.get_paginator().paginate.assert_called_with(arn=TEST_PHYSICAL_RESOURCE_ID, type='CURATED')
 
 
 def test_handler_create_fails(context, cf_endpoint, device_farm_endpoint):
@@ -123,8 +147,12 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
     assert len(cf_endpoint.request_history) == 1
     assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
     assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
+    assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Data']['TopDevicesDevicePoolArn'] == TEST_TOP_DEVICES_ARN
     device_farm_endpoint.create_project.assert_not_called()
     device_farm_endpoint.update_project.assert_called_with(arn=TEST_PHYSICAL_RESOURCE_ID, name=TEST_PROJECT_NAME)
+    device_farm_endpoint.get_paginator.assert_called_with('list_device_pools')
+    device_farm_endpoint.get_paginator().paginate.assert_called_with(arn=TEST_PHYSICAL_RESOURCE_ID, type='CURATED')
 
 
 def test_handler_update_fails(context, cf_endpoint, device_farm_endpoint):
