@@ -52,7 +52,7 @@ def lambda_handler(event: dict, context):
             context=context,
             status=cloudformation.Status.FAILED,
             reason=str(e),
-            physical_resource_id=physical_resource_id
+            physical_resource_id=physical_resource_id,
         )
 
     print('Finished')

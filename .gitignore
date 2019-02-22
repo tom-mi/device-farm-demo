@@ -11,3 +11,6 @@
 /.idea
 __pycache__
 *.pyc
+*.egg-info
+
+/lambda_build

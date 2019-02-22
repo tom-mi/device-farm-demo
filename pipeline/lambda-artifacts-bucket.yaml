@@ -1,0 +1,14 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Device Farm demo pipeline - lambda artifacts bucket
+Parameters:
+  Prefix:
+    AllowedPattern: '[A-Za-z0-9]+'
+    Type: String
+Resources:
+  LambdaArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Prefix}-device-farm-demo-lambda-artifacts-${AWS::AccountId}'
+Outputs:
+  LambdaArtifactsBucket:
+    Value: !Ref LambdaArtifactsBucket
