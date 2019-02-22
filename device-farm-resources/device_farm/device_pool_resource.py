@@ -7,7 +7,7 @@ from botocore.client import BaseClient
 
 from . import cloudformation
 
-KNOWN_PROPERTIES = {'Name', 'Rules', 'ProjectArn', 'Description', 'MaxDevices'}
+KNOWN_PROPERTIES = {'Name', 'Rules', 'ProjectArn', 'Description', 'MaxDevices', 'ServiceToken'}
 
 
 def lambda_handler(event: dict, context):

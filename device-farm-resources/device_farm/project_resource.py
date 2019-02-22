@@ -7,11 +7,14 @@ from botocore.client import BaseClient
 
 from . import cloudformation
 
+KNOWN_PROPERTIES = {'ProjectName', 'ServiceToken'}
+
 
 def lambda_handler(event: dict, context):
     print(event)
     physical_resource_id = event.get('PhysicalResourceId')
     project_name = event.get('ResourceProperties', {}).get('ProjectName', None)
+    extra_properties = set(event.get('ResourceProperties', {}).keys()).difference(KNOWN_PROPERTIES)
 
     try:
         if not project_name:
@@ -20,6 +23,14 @@ def lambda_handler(event: dict, context):
                 context=context,
                 status=cloudformation.Status.FAILED,
                 reason='ProjectName is not set',
+                physical_resource_id=cloudformation.RESOURCE_NOT_CREATED
+            )
+        elif extra_properties:
+            cloudformation.send_response(
+                event=event,
+                context=context,
+                status=cloudformation.Status.FAILED,
+                reason=f'Unknown properties found: {", ".join(extra_properties)}',
                 physical_resource_id=cloudformation.RESOURCE_NOT_CREATED
             )
         else:

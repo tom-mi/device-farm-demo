@@ -80,6 +80,29 @@ def test_handler_create_missing_parameter(context, cf_endpoint, device_farm_endp
     device_farm_endpoint.update_project.assert_not_called()
 
 
+def test_handler_create_extra_parameter(context, cf_endpoint, device_farm_endpoint):
+    event = {
+        'RequestType': 'Create',
+        'LogicalResourceId': 'DeviceFarm',
+        'RequestId': '1234',
+        'ResponseURL': TEST_RESPONSE_URL,
+        'StackId': 'arn:aws:cloudformation:us-east-2:namespace:stack/stack-name/guid',
+        'ResourceProperties': {
+            'ProjectName': TEST_PROJECT_NAME,
+            'Foo': 'Bar',
+        }
+    }
+
+    project_resource.lambda_handler(event, context)
+
+    assert cf_endpoint.called
+    assert len(cf_endpoint.request_history) == 1
+    assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == 'ResourceNotCreated'
+    assert cf_endpoint.request_history[0].json()['Status'] == 'FAILED'
+    device_farm_endpoint.create_project.assert_not_called()
+    device_farm_endpoint.update_project.assert_not_called()
+
+
 def test_handler_create(context, cf_endpoint, device_farm_endpoint):
     event = {
         'RequestType': 'Create',
