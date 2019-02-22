@@ -14,7 +14,7 @@ if [[ -e sources.zip ]]; then
 fi
 
 echo "Packaging sources"
-zip --quiet -r sources.zip app gradlew gradle build.gradle gradle.properties pipeline/buildspec.yaml
+zip --quiet --exclude 'app/build/*' -r sources.zip app gradlew gradle build.gradle settings.gradle gradle.properties pipeline/buildspec.yaml
 
 pipeline_stack_name="${PREFIX}-device-farm-demo-pipeline"
 source_bucket=$(aws cloudformation describe-stacks \
