@@ -130,6 +130,13 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/codebuild/${CodeBuildProject}
       RetentionInDays: 7
+  DeviceFarmProject:
+    Type: Custom::DeviceFarmProject
+    Properties:
+      ServiceToken:
+        Fn::ImportValue:
+          !Sub '${Prefix}-device-farm-project-function-arn'
+      ProjectName: !Sub '${Prefix}-device-farm-demo'
 Outputs:
   SourceBucket:
     Value: !Ref SourceBucket
