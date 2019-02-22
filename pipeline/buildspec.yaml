@@ -1,0 +1,16 @@
+version: 0.2
+
+env:
+  variables:
+    ANDROID_HOME: "/usr/local/android-sdk-linux"
+phases:
+  build:
+    commands:
+      - ./gradlew clean build assembleAndroidTest
+cache:
+  paths:
+    - /root/.gradle/caches/**/*
+artifacts:
+  discard-paths: yes
+  files:
+    - app/build/outputs/apk/**/*

@@ -9,6 +9,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub '${Prefix}-device-farm-demo-source-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Enabled
   PipelineRole:
     Type: AWS::IAM::Role
     Properties:
@@ -23,6 +25,26 @@ Resources:
                 - codepipeline.amazonaws.com
       ManagedPolicyArns:
         - Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-role-arn'
+      Policies:
+        - PolicyName: PipelinePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketVersioning
+                  - s3:ListBucketVersions
+                Resource: !GetAtt SourceBucket.Arn
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: !Sub arn:aws:s3:::${SourceBucket}/*
+              - Effect: Allow
+                Action:
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuilds
+                Resource: '*'
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -32,9 +54,9 @@ Resources:
           Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-bucket'
       RoleArn: !GetAtt PipelineRole.Arn
       Stages:
-        - Name: S3Trigger
+        - Name: S3
           Actions:
-            - Name: S3Trigger
+            - Name: S3
               ActionTypeId:
                 Category: Source
                 Owner: AWS
@@ -42,7 +64,7 @@ Resources:
                 Version: 1
               Configuration:
                 S3Bucket: !Ref SourceBucket
-                S3ObjectKey: source.tar.gz
+                S3ObjectKey: sources.zip
               OutputArtifacts:
                 - Name: sources
         - Name: Build
@@ -70,6 +92,19 @@ Resources:
             Principal:
               Service:
                 - codebuild.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-role-arn'
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -95,3 +130,6 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/codebuild/${CodeBuildProject}
       RetentionInDays: 7
+Outputs:
+  SourceBucket:
+    Value: !Ref SourceBucket
