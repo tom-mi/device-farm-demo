@@ -9,3 +9,5 @@
 /captures
 .externalNativeBuild
 /.idea
+__pycache__
+*.pyc
