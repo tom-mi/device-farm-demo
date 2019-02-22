@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: AWS Device Farm demo pipeline - lambda artifacts bucket
+Description: AWS Device Farm demo - lambda artifacts bucket
 Parameters:
   Prefix:
     AllowedPattern: '[A-Za-z0-9]+'

@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Device Farm demo - custom resources
+Parameters:
+  Prefix:
+    AllowedPattern: '[A-Za-z0-9]+'
+    Type: String
+Resources:
+  CustomResourceDeviceFarmProjectFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Custom resource lambda to manage device-farm projects
+      Handler: device_farm.handler.lambda_handler
+      Role: !GetAtt CustomResourceLambdaExecutionRole.Arn
+      Code: ../lambda_build/build/device-farm-project-resource
+      Runtime: python3.6
+      Timeout: 60
+  CustomResourceLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CustomResourceDeviceFarmProjectFunction}
+      RetentionInDays: 7
+  UseCustomResourcePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: !GetAtt CustomResourceDeviceFarmProjectFunction.Arn
+Outputs:
+  FunctionArn:
+    Value: !GetAtt CustomResourceDeviceFarmProjectFunction.Arn
+    Export:
+      Name: !Sub '${Prefix}-device-farm-project-function-arn'
+  UseFunctionPolicyArn:
+    Value: !Ref UseCustomResourcePolicy
+    Export:
+      Name: !Sub '${Prefix}-device-farm-custom-resource-policy-arn'

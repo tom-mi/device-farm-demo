@@ -56,3 +56,17 @@ lambda_artifacts_bucket=$(aws cloudformation describe-stacks \
     --stack-name ${lambda_artifacts_stack_name} \
     --query 'Stacks[0].Outputs[?OutputKey==`LambdaArtifactsBucket`].OutputValue')
 
+echo "Packaging device-farm custom resource lambdas"
+aws cloudformation package \
+    --template-file pipeline/resources.yaml \
+    --output-template-file lambda_build/resources.yaml \
+    --s3-bucket ${lambda_artifacts_bucket}
+
+resources_stack_name="${PREFIX}-device-farm-demo-resources"
+echo "Deploying resources to ${resources_stack_name}"
+aws cloudformation deploy \
+    --template-file lambda_build/resources.yaml \
+    --stack-name ${resources_stack_name} \
+    --no-fail-on-empty-changeset \
+    --capabilities CAPABILITY_IAM \
+    --parameter-overrides "Prefix=${PREFIX}"
