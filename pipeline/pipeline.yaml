@@ -111,7 +111,6 @@ Resources:
                 Test: app-debug-androidTest.apk
                 DevicePoolArn: !GetAtt DeviceFarmProject.TopDevicesDevicePoolArn
                 TestType: Instrumentation
-            #"AppiumVersion": "1.7.2"
               InputArtifacts:
                 - Name: apks
   CodeBuildRole:
