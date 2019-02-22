@@ -1,5 +1,4 @@
 import pytest
-from datetime import datetime
 from requests_mock import Mocker
 from unittest.mock import MagicMock
 
@@ -116,6 +115,35 @@ def test_handler_create(context, cf_endpoint, device_farm_endpoint):
     device_farm_endpoint.update_device_pool.assert_not_called()
 
 
+def test_handler_create_without_optional_parameters(context, cf_endpoint, device_farm_endpoint):
+    event = {
+        'RequestType': 'Create',
+        'LogicalResourceId': 'DeviceFarm',
+        'RequestId': '1234',
+        'ResponseURL': TEST_RESPONSE_URL,
+        'StackId': 'arn:aws:cloudformation:us-east-2:namespace:stack/stack-name/guid',
+        'ResourceProperties': {
+            'ProjectArn': TEST_PROJECT_ARN,
+            'Name': TEST_DEVICE_POOL_NAME,
+            'Rules': TEST_DEVICE_POOL_RULES,
+        }
+    }
+
+    device_pool_resource.lambda_handler(event, context)
+
+    assert cf_endpoint.called
+    assert len(cf_endpoint.request_history) == 1
+    assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
+    assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    device_farm_endpoint.create_device_pool.assert_called_with(
+        projectArn=TEST_PROJECT_ARN,
+        name=TEST_DEVICE_POOL_NAME,
+        rules=TEST_DEVICE_POOL_RULES,
+    )
+    device_farm_endpoint.update_device_pool.assert_not_called()
+
+
 def test_handler_create_fails(context, cf_endpoint, device_farm_endpoint):
     event = {
         'RequestType': 'Create',
@@ -151,7 +179,7 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
         'RequestId': '1234',
         'ResponseURL': TEST_RESPONSE_URL,
         'StackId': 'arn:aws:cloudformation:us-east-2:namespace:stack/stack-name/guid',
-        'ResourceProperties': TEST_VALID_RESOURCE_PROPERTIES
+        'ResourceProperties': TEST_VALID_RESOURCE_PROPERTIES,
     }
 
     device_pool_resource.lambda_handler(event, context)
@@ -169,6 +197,38 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
         description=TEST_DESCRIPTION,
         rules=TEST_DEVICE_POOL_RULES,
         maxDevices=TEST_MAX_DEVICES,
+    )
+
+
+def test_handler_update_without_optional_parameters(context, cf_endpoint, device_farm_endpoint):
+    event = {
+        'RequestType': 'Update',
+        'LogicalResourceId': 'DeviceFarm',
+        'PhysicalResourceId': TEST_PHYSICAL_RESOURCE_ID,
+        'RequestId': '1234',
+        'ResponseURL': TEST_RESPONSE_URL,
+        'StackId': 'arn:aws:cloudformation:us-east-2:namespace:stack/stack-name/guid',
+        'ResourceProperties': {
+            'ProjectArn': TEST_PROJECT_ARN,
+            'Name': TEST_DEVICE_POOL_NAME,
+            'Rules': TEST_DEVICE_POOL_RULES,
+        }
+    }
+
+    device_pool_resource.lambda_handler(event, context)
+
+    assert cf_endpoint.called
+    assert len(cf_endpoint.request_history) == 1
+    assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
+    assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    device_farm_endpoint.create_device_pool.assert_not_called()
+    device_farm_endpoint.update_device_pool.assert_called_with(
+        arn=TEST_PHYSICAL_RESOURCE_ID,
+        projectArn=TEST_PROJECT_ARN,
+        name=TEST_DEVICE_POOL_NAME,
+        rules=TEST_DEVICE_POOL_RULES,
+        clearMaxDevices=True,
     )
 
 

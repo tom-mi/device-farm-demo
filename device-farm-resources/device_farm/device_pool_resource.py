@@ -54,34 +54,32 @@ def lambda_handler(event: dict, context):
                     client.delete_device_pool(arn=physical_resource_id)
                 elif event['RequestType'] == 'Create':
                     client = _get_device_farm_client()
-                    response = client.create_device_pool(
-                        projectArn=project_arn,
-                        name=name,
-                        description=description,
-                        rules=rules,
-                        maxDevices=max_devices,
-                    )
+                    params = {
+                        'projectArn': project_arn,
+                        'name': name,
+                        'rules': rules,
+                    }
+                    if description is not None:
+                        params['description'] = description
+                    if max_devices is not None:
+                        params['maxDevices'] = max_devices
+                    response = client.create_device_pool(**params)
                     physical_resource_id = response['devicePool']['arn']
                 elif event['RequestType'] == 'Update':
                     client = _get_device_farm_client()
-                    if max_devices:
-                        client.update_device_pool(
-                            arn=physical_resource_id,
-                            projectArn=project_arn,
-                            name=name,
-                            description=description,
-                            rules=rules,
-                            maxDevices=max_devices,
-                        )
+                    params = {
+                        'arn': physical_resource_id,
+                        'projectArn': project_arn,
+                        'name': name,
+                        'rules': rules,
+                    }
+                    if max_devices is not None:
+                        params['maxDevices'] = max_devices
                     else:
-                        client.update_device_pool(
-                            arn=physical_resource_id,
-                            projectArn=project_arn,
-                            name=name,
-                            description=description,
-                            rules=rules,
-                            clearMaxDevices=True,
-                        )
+                        params['clearMaxDevices'] = True
+                    if description is not None:
+                        params['description'] = description
+                    client.update_device_pool(**params)
                 else:
                     raise ValueError('Unknown RequestType ' + event['RequestType'])
 
