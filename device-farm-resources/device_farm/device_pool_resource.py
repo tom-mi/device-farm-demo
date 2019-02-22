@@ -69,7 +69,6 @@ def lambda_handler(event: dict, context):
                     client = _get_device_farm_client()
                     params = {
                         'arn': physical_resource_id,
-                        'projectArn': project_arn,
                         'name': name,
                         'rules': rules,
                     }

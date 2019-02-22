@@ -192,7 +192,6 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
     device_farm_endpoint.create_device_pool.assert_not_called()
     device_farm_endpoint.update_device_pool.assert_called_with(
         arn=TEST_PHYSICAL_RESOURCE_ID,
-        projectArn=TEST_PROJECT_ARN,
         name=TEST_DEVICE_POOL_NAME,
         description=TEST_DESCRIPTION,
         rules=TEST_DEVICE_POOL_RULES,
@@ -225,7 +224,6 @@ def test_handler_update_without_optional_parameters(context, cf_endpoint, device
     device_farm_endpoint.create_device_pool.assert_not_called()
     device_farm_endpoint.update_device_pool.assert_called_with(
         arn=TEST_PHYSICAL_RESOURCE_ID,
-        projectArn=TEST_PROJECT_ARN,
         name=TEST_DEVICE_POOL_NAME,
         rules=TEST_DEVICE_POOL_RULES,
         clearMaxDevices=True,
@@ -258,7 +256,6 @@ def test_handler_update_clear_max_devices(context, cf_endpoint, device_farm_endp
     device_farm_endpoint.create_device_pool.assert_not_called()
     device_farm_endpoint.update_device_pool.assert_called_with(
         arn=TEST_PHYSICAL_RESOURCE_ID,
-        projectArn=TEST_PROJECT_ARN,
         name=TEST_DEVICE_POOL_NAME,
         description=TEST_DESCRIPTION,
         rules=TEST_DEVICE_POOL_RULES,
@@ -287,7 +284,6 @@ def test_handler_update_fails(context, cf_endpoint, device_farm_endpoint):
     device_farm_endpoint.create_device_pool.assert_not_called()
     device_farm_endpoint.update_device_pool.assert_called_with(
         arn=TEST_PHYSICAL_RESOURCE_ID,
-        projectArn=TEST_PROJECT_ARN,
         name=TEST_DEVICE_POOL_NAME,
         description=TEST_DESCRIPTION,
         rules=TEST_DEVICE_POOL_RULES,
