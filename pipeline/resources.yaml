@@ -14,6 +14,15 @@ Resources:
       Code: ../lambda_build/build/device-farm-resources
       Runtime: python3.6
       Timeout: 60
+  CustomResourceDeviceFarmDevicePoolFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Custom resource lambda to manage device-farm device pools
+      Handler: device_farm.device_pool_resource.lambda_handler
+      Role: !GetAtt CustomResourceLambdaExecutionRole.Arn
+      Code: ../lambda_build/build/device-farm-resources
+      Runtime: python3.6
+      Timeout: 60
   CustomResourceLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -39,10 +48,15 @@ Resources:
                   - devicefarm:DeleteProject
                   - devicefarm:ListDevicePools
                 Resource: '*'
-  LogGroup:
+  ProjectLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${CustomResourceDeviceFarmProjectFunction}
+      RetentionInDays: 7
+  DevicePoolLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CustomResourceDeviceFarmDevicePoolFunction}
       RetentionInDays: 7
   UseCustomResourcePolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -53,12 +67,18 @@ Resources:
           - Effect: Allow
             Action:
               - lambda:InvokeFunction
-            Resource: !GetAtt CustomResourceDeviceFarmProjectFunction.Arn
+            Resource:
+              - !GetAtt CustomResourceDeviceFarmProjectFunction.Arn
+              - !GetAtt CustomResourceDeviceFarmDevicePoolFunction.Arn
 Outputs:
-  FunctionArn:
+  ProjectFunctionArn:
     Value: !GetAtt CustomResourceDeviceFarmProjectFunction.Arn
     Export:
       Name: !Sub '${Prefix}-device-farm-project-function-arn'
+  DevicePoolFunctionArn:
+    Value: !GetAtt CustomResourceDeviceFarmDevicePoolFunction.Arn
+    Export:
+      Name: !Sub '${Prefix}-device-farm-device-pool-function-arn'
   UseFunctionPolicyArn:
     Value: !Ref UseCustomResourcePolicy
     Export:
