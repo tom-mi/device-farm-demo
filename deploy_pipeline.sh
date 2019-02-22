@@ -49,6 +49,7 @@ aws cloudformation deploy \
     --template-file pipeline/infrastructure.yaml \
     --stack-name ${infrastructure_stack_name} \
     --no-fail-on-empty-changeset \
+    --capabilities CAPABILITY_IAM \
     --parameter-overrides "Prefix=${PREFIX}"
 
 lambda_artifacts_bucket=$(aws cloudformation describe-stacks \
@@ -67,6 +68,15 @@ echo "Deploying resources to ${resources_stack_name}"
 aws cloudformation deploy \
     --template-file lambda_build/resources.yaml \
     --stack-name ${resources_stack_name} \
+    --no-fail-on-empty-changeset \
+    --capabilities CAPABILITY_IAM \
+    --parameter-overrides "Prefix=${PREFIX}"
+
+pipeline_stack_name="${PREFIX}-device-farm-demo-pipeline"
+echo "Deploying pipeline to ${pipeline_stack_name}"
+aws cloudformation deploy \
+    --template-file pipeline/pipeline.yaml \
+    --stack-name ${pipeline_stack_name} \
     --no-fail-on-empty-changeset \
     --capabilities CAPABILITY_IAM \
     --parameter-overrides "Prefix=${PREFIX}"

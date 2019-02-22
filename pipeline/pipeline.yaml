@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Device Farm demo - pipeline
+Parameters:
+  Prefix:
+    AllowedPattern: '[A-Za-z0-9]+'
+    Type: String
+Resources:
+  SourceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Prefix}-device-farm-demo-source-${AWS::AccountId}'
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codepipeline.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-role-arn'
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location:
+          Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-bucket'
+      RoleArn: !GetAtt PipelineRole.Arn
+      Stages:
+        - Name: S3Trigger
+          Actions:
+            - Name: S3Trigger
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: S3
+                Version: 1
+              Configuration:
+                S3Bucket: !Ref SourceBucket
+                S3ObjectKey: source.tar.gz
+              OutputArtifacts:
+                - Name: sources
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              InputArtifacts:
+                - Name: sources
+              OutputArtifacts:
+                - Name: apk-and-infrastructure
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub '${Prefix}-device-farm-demo-build'
+      ServiceRole: !Ref CodeBuildRole
+      Cache:
+        Location: !Sub
+          - ${BucketName}/cache/device-farm-demo-build
+          - BucketName:
+              Fn::ImportValue: !Sub '${Prefix}-device-farm-demo-pipeline-artifacts-bucket'
+        Type: S3
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: pipeline/buildspec.yaml
+      Environment:
+        ComputeType: BUILD_GENERAL1_LARGE
+        Image: aws/codebuild/android-java-8:26.1.1
+        Type: LINUX_CONTAINER
+  CodeBuildLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/codebuild/${CodeBuildProject}
+      RetentionInDays: 7
