@@ -48,7 +48,11 @@ def lambda_handler(event: dict, context):
                     event=event, context=context,
                     status=cloudformation.Status.SUCCESS,
                     physical_resource_id=physical_resource_id,
-                    data={'Arn': physical_resource_id, 'TopDevicesDevicePoolArn': top_devices_device_pool_arn},
+                    data={
+                        'Arn': physical_resource_id,
+                        'ProjectId': get_project_id(physical_resource_id),
+                        'TopDevicesDevicePoolArn': top_devices_device_pool_arn,
+                    },
                 )
     except Exception as e:
         print(e)
@@ -74,6 +78,11 @@ def get_top_device_pool_arn(client: BaseClient, project_arn: str) -> Optional[st
                 return device_pool['arn']
     print('Top Devices device pool not found')
     return None
+
+
+def get_project_id(project_arn: str) -> str:
+    arn_parts = project_arn.split(':')
+    return arn_parts[-1]
 
 
 def _get_device_farm_client() -> BaseClient:

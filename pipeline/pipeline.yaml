@@ -45,6 +45,15 @@ Resources:
                   - codebuild:StartBuild
                   - codebuild:BatchGetBuilds
                 Resource: '*'
+              - Effect: Allow
+                Action:
+                  - devicefarm:CreateUpload
+                  - devicefarm:GetRun
+                  - devicefarm:GetUpload
+                  - devicefarm:ListDevicePools
+                  - devicefarm:ListProjects
+                  - devicefarm:ScheduleRun
+                Resource: '*'
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -80,7 +89,31 @@ Resources:
               InputArtifacts:
                 - Name: sources
               OutputArtifacts:
-                - Name: apk-and-infrastructure
+                - Name: apks
+        - Name: Test
+          Actions:
+            - Name: DeviceFarmTest
+              ActionTypeId:
+                Category: Test
+                Owner: AWS
+                Version: 1
+                Provider: DeviceFarm
+              Configuration:
+                RecordAppPerformanceData: true
+                AppType: Android
+                ProjectId: !GetAtt DeviceFarmProject.ProjectId
+                App:  app-release-unsigned.apk
+                RadioBluetoothEnabled: true
+                RecordVideo: true
+                RadioWifiEnabled: true
+                RadioNfcEnabled: true
+                RadioGpsEnabled: true
+                Test: app-debug-androidTest.apk
+                DevicePoolArn: !GetAtt DeviceFarmProject.TopDevicesDevicePoolArn
+                TestType: Instrumentation
+            #"AppiumVersion": "1.7.2"
+              InputArtifacts:
+                - Name: apks
   CodeBuildRole:
     Type: AWS::IAM::Role
     Properties:

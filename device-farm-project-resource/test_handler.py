@@ -8,7 +8,8 @@ from device_farm import handler
 
 TEST_PROJECT_NAME = 'project-name'
 TEST_RESPONSE_URL = 'http://example.com/response'
-TEST_PHYSICAL_RESOURCE_ID = '1235'
+TEST_PHYSICAL_RESOURCE_ID = 'arn:aws:devicefarm:us-west-2:account-id:project:12345'
+TEST_PROJECT_ID = '12345'
 TEST_TOP_DEVICES_ARN = 'arn:top-devices'
 
 
@@ -98,6 +99,7 @@ def test_handler_create(context, cf_endpoint, device_farm_endpoint):
     assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
     assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
     assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Data']['ProjectId'] == TEST_PROJECT_ID
     assert cf_endpoint.request_history[0].json()['Data']['TopDevicesDevicePoolArn'] == TEST_TOP_DEVICES_ARN
     device_farm_endpoint.create_project.assert_called_with(name=TEST_PROJECT_NAME)
     device_farm_endpoint.update_project.assert_not_called()
@@ -148,6 +150,7 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
     assert cf_endpoint.request_history[0].json()['PhysicalResourceId'] == TEST_PHYSICAL_RESOURCE_ID
     assert cf_endpoint.request_history[0].json()['Status'] == 'SUCCESS'
     assert cf_endpoint.request_history[0].json()['Data']['Arn'] == TEST_PHYSICAL_RESOURCE_ID
+    assert cf_endpoint.request_history[0].json()['Data']['ProjectId'] == TEST_PROJECT_ID
     assert cf_endpoint.request_history[0].json()['Data']['TopDevicesDevicePoolArn'] == TEST_TOP_DEVICES_ARN
     device_farm_endpoint.create_project.assert_not_called()
     device_farm_endpoint.update_project.assert_called_with(arn=TEST_PHYSICAL_RESOURCE_ID, name=TEST_PROJECT_NAME)
