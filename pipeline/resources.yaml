@@ -47,6 +47,9 @@ Resources:
                   - devicefarm:UpdateProject
                   - devicefarm:DeleteProject
                   - devicefarm:ListDevicePools
+                  - devicefarm:CreateDevicePool
+                  - devicefarm:UpdateDevicePool
+                  - devicefarm:DeleteDevicePool
                 Resource: '*'
   ProjectLogGroup:
     Type: AWS::Logs::LogGroup
