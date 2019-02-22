@@ -11,7 +11,7 @@ Resources:
       Description: Custom resource lambda to manage device-farm projects
       Handler: device_farm.handler.lambda_handler
       Role: !GetAtt CustomResourceLambdaExecutionRole.Arn
-      Code: ../lambda_build/build/device-farm-project-resource
+      Code: ../lambda_build/build/device-farm-resources
       Runtime: python3.6
       Timeout: 60
   CustomResourceLambdaExecutionRole:

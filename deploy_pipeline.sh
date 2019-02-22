@@ -20,7 +20,7 @@ mkdir -p "${BUILD_DIR}/test"
 (
     unset "${!AWS_@}"
 
-    for pkg in "device-farm-project-resource"; do
+    for pkg in "device-farm-resources"; do
         echo "Testing ${pkg}"
         test_target="${BUILD_DIR}/test/${pkg}"
         cp -r ${pkg} ${test_target}
