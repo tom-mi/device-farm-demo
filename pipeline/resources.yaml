@@ -9,7 +9,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Description: Custom resource lambda to manage device-farm projects
-      Handler: device_farm.handler.lambda_handler
+      Handler: device_farm.project_resource.lambda_handler
       Role: !GetAtt CustomResourceLambdaExecutionRole.Arn
       Code: ../lambda_build/build/device-farm-resources
       Runtime: python3.6

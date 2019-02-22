@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock
 from requests_mock import Mocker
 
-from device_farm import handler
+from device_farm import project_resource
 
 TEST_PROJECT_NAME = 'project-name'
 TEST_RESPONSE_URL = 'http://example.com/response'
@@ -70,7 +70,7 @@ def test_handler_create_missing_parameter(context, cf_endpoint, device_farm_endp
         }
     }
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -92,7 +92,7 @@ def test_handler_create(context, cf_endpoint, device_farm_endpoint):
         }
     }
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -120,7 +120,7 @@ def test_handler_create_fails(context, cf_endpoint, device_farm_endpoint):
     }
     device_farm_endpoint.create_project = MagicMock(side_effect=Exception('This went wrong'))
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -143,7 +143,7 @@ def test_handler_update(context, cf_endpoint, device_farm_endpoint):
         }
     }
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -172,7 +172,7 @@ def test_handler_update_fails(context, cf_endpoint, device_farm_endpoint):
     }
     device_farm_endpoint.update_project = MagicMock(side_effect=Exception('This went wrong'))
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -195,7 +195,7 @@ def test_handler_delete(context, cf_endpoint, device_farm_endpoint):
         }
     }
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -219,7 +219,7 @@ def test_handler_delete_not_created(context, cf_endpoint, device_farm_endpoint):
         }
     }
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
@@ -244,7 +244,7 @@ def test_handler_delete_fails(context, cf_endpoint, device_farm_endpoint):
     }
     device_farm_endpoint.delete_project = MagicMock(side_effect=Exception('This went wrong'))
 
-    handler.lambda_handler(event, context)
+    project_resource.lambda_handler(event, context)
 
     assert cf_endpoint.called
     assert len(cf_endpoint.request_history) == 1
