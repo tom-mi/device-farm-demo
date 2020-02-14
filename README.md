@@ -4,7 +4,7 @@ Minimal demo of a CodePipeline executing Android instrumentation tests in AWS De
 
 This demo includes
 
-* Custom resources to create AWS DevicFarm projects & device pools
+* Custom resources to create AWS DeviceFarm projects & device pools
 * A minimal Android project with one Hello-World instrumentation test
 * A CodePipeline to build the Android app and run instrumentation tests on DeviceFarm
 
