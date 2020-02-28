@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import boto3
@@ -9,9 +10,12 @@ from . import cloudformation
 
 KNOWN_PROPERTIES = {'ProjectName', 'ServiceToken'}
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 def lambda_handler(event: dict, context):
-    print(event)
+    logging.info(f"Handling Request {event}")
     physical_resource_id = event.get('PhysicalResourceId')
     project_name = event.get('ResourceProperties', {}).get('ProjectName', None)
     extra_properties = set(event.get('ResourceProperties', {}).keys()).difference(KNOWN_PROPERTIES)

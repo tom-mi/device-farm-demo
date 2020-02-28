@@ -1,17 +1,20 @@
+import logging
+import traceback
 from typing import Optional
 
 import boto3
-import traceback
-
 from botocore.client import BaseClient
 
 from . import cloudformation
 
 KNOWN_PROPERTIES = {'Name', 'Rules', 'ProjectArn', 'Description', 'MaxDevices', 'ServiceToken'}
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 def lambda_handler(event: dict, context):
-    print(event)
+    logging.info(f"Handling Request {event}")
     physical_resource_id = event.get('PhysicalResourceId')
     project_arn = event.get('ResourceProperties', {}).get('ProjectArn', None)
     name = event.get('ResourceProperties', {}).get('Name', None)

@@ -20,8 +20,6 @@ def send_response(event: dict, context, status: Status, reason: Optional[str] = 
                   no_echo: bool = False) -> None:
     if data is None:
         data = {}
-    logger.debug(f'Try to send Cloudformation response for resource {event["LogicalResourceId"]} '
-                 f'in stack {event["StackId"]}. Status is {status.name}')
 
     response_body = {
         'Status': status.name,
@@ -34,6 +32,7 @@ def send_response(event: dict, context, status: Status, reason: Optional[str] = 
         'NoEcho': no_echo
     }
 
+    logger.info(f"Sending CloudFormation Response {response_body}")
     response = requests.put(url=event['ResponseURL'],
                             data=json.dumps(response_body).encode('utf-8'))
     logger.info('CloudFormation response sent. HTTP status was ' + str(response.status_code))
